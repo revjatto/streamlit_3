@@ -11,7 +11,7 @@ st.set_page_config(page_title="Registration Form Application",
 st.image('Kings.PNG', width=900)
 
 
-register = st.sidebar.selectbox("Select an option", ["Registration Form", "Maps", "Data Visualization", "quiz"])
+register = st.sidebar.selectbox("Select an option", ["Registration Form", "GPS", "Data Visualization", "quiz"])
 if register == 'Registration Form':
     st.header('Streamlit registration form')
 
@@ -34,7 +34,7 @@ if register == 'Registration Form':
     ch, bl, sub = st.columns(3)
     ch.checkbox("I Agree")
     sub.button("Submit")
-elif register == 'Maps':
+elif register == 'GPS':
     city = pd.DataFrame({
         'nigerian_cities': ['Lagos', 'Abeokuta', 'Port Harcourt', 'Maiduguri', 'Kano',
                             'Katsina', 'Nnewi, Anambra', 'Agbor, Ika South', 'Ikeja, Lagos', 'Ughelli', 'Akure'],
@@ -44,9 +44,51 @@ elif register == 'Maps':
     st.subheader('Nigerian city Lat and Long')
     st.map(city)
 elif register == 'Data Visualization':
-    st.subheader('Data Visualization project')
-    st.write('data visualization project is coming soon')
-    st.image('data-visualization.jpg')
+        st.subheader('Data Visualization project')
+        
+        
+        #setup file upload
+
+        uploaded_file = st.sidebar.file_uploader(
+        label='Upload your csv or Excel File.', type=['csv', 'xlsx'])
+
+        global df
+        if uploaded_file is not None:
+            print(uploaded_file)
+            st.write('File Uploaded successfully!')
+        try:
+            df = pd.read_csv(uploaded_file)
+        except Exception as e:
+            print(e)
+            st.image('data-visualization.jpg')
+            df = pd.read_excel(uploaded_file)
+
+        global numeric_columns
+        try:
+            print(df)
+            numeric_columns = list(df.select_dtypes(['float', 'int']).columns)
+        except Exception as e:
+            print(e)
+            st.write('Please upload a csv or xlsx file to start')
+
+#add select widget to the sidebar
+
+        chart_select = st.sidebar.selectbox(
+        label="Select a chart type",
+        options=['Scatterplots', 'Lineplots', 'Histogram', 'Boxplot'])
+
+
+        if chart_select == 'Scatterplots':
+            st.sidebar.subheader('Scatterplot Settings')
+        try:
+            x_values = st.sidebar.selectbox('X axis', options=numeric_columns)
+            y_values = st.sidebar.selectbox('y axis', options=numeric_columns)
+            plot = px.scatter(data_frame=df, x=x_values, y=y_values)
+             # displaying the chart
+            st.plotly_chart(plot)
+        except Exception as e:
+            print(e)
+
 elif register == 'quiz':
     
     st.subheader('Small quiz project')
